@@ -17,7 +17,7 @@ protected:
   bool closed_ = false;
   uint64_t pushed_size_ = 0;
 
-  std::string buffer{};
+  std::string buffer {};
 
   uint64_t poped_size_ = 0;
 
