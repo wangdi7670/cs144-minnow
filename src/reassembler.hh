@@ -15,6 +15,7 @@ class Reassembler
 
     Packet(uint64_t first_index, std::string& data, bool is_last_str);
 
+    // get the upper bound of this packet
     uint64_t get_last_index();
   };
 
