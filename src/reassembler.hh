@@ -6,6 +6,23 @@
 
 class Reassembler
 {
+  class Packet
+  {
+  public:
+    uint64_t first_index_;
+    std::string data_;
+    bool is_last_str_;
+
+    Packet(uint64_t first_index, std::string& data, bool is_last_str);
+
+    uint64_t get_last_index();
+  };
+
+private:
+  uint64_t next_index {};
+  std::vector<Packet> v {};
+  
+
 public:
   /*
    * Insert a new substring to be reassembled into a ByteStream.
@@ -31,4 +48,7 @@ public:
 
   // How many bytes are stored in the Reassembler itself?
   uint64_t bytes_pending() const;
+
+  // reorder v by the first_index of Packet
+  void reorder_v();
 };

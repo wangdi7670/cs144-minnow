@@ -2,6 +2,14 @@
 
 using namespace std;
 
+
+Reassembler::Packet::Packet(uint64_t first_index, std::string& data, bool is_last_str) :
+  first_index_(first_index), 
+  data_(std::move(data)),
+  is_last_str_(is_last_str)
+{}
+
+
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring, Writer& output )
 {
   // Your code here.
