@@ -75,7 +75,11 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
 uint64_t Reassembler::bytes_pending() const
 {
   // Your code here.
-  return {};
+  uint64_t bytes = 0;
+  for (auto packet : v) {
+    bytes += packet.data_.size();
+  }
+  return bytes;
 }
 
 void Reassembler::reorder_v()
