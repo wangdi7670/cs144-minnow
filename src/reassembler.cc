@@ -1,4 +1,5 @@
 #include "reassembler.hh"
+#include "algorithm"
 
 using namespace std;
 
@@ -29,4 +30,11 @@ uint64_t Reassembler::bytes_pending() const
 {
   // Your code here.
   return {};
+}
+
+void Reassembler::reorder_v()
+{
+  std::sort(v.begin(), v.end(), [](const Packet& p1, const Packet& p2){
+    return p1.first_index_ < p2.first_index_;
+  });
 }
