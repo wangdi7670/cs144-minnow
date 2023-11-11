@@ -28,22 +28,48 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
 
   uint64_t av = output.available_capacity();
 
+  // truncating data
   if ( next_index == first_index ) {
     data = data.substr( 0, 0 + av );
     Packet packet( first_index, data, is_last_substring );
     v.push_back( packet );
+  }
+  else if ( next_index < first_index ) {
+    uint64_t bound = next_index + av;
+    uint64_t number = bound - first_index;
+    data = data.substr(0, 0+number);
 
-    reorder_v();
-    deal_with_overlap();
+    Packet packet( first_index, data, is_last_substring );
+    v.push_back( packet );
+  }
+  else if ( next_index > first_index ) {
+    uint64_t start = next_index - first_index;
 
-  } else if ( next_index < first_index ) {
+    data = data.substr(start, start+av);
 
-  } else if ( next_index > first_index ) {
+    Packet packet( next_index, data, is_last_substring );
+    v.push_back( packet );
 
+    if (v.front().first_index_ != next_index) {
+      std::cout << "exception: first_index_ != next_index" << "\n";
+    }
   } else {
     std::cout << "exception!"
               << "\n";
   }
+
+  deal_with_overlap();
+
+  while (next_index == v.front().first_index_) {
+    Packet& p = v.front();
+    output.push(p.data_);
+    if (p.is_last_str_) {
+      output.close();
+    }
+
+    next_index += p.data_.size();
+    v.erase(v.begin());
+  }    
 }
 
 uint64_t Reassembler::bytes_pending() const
@@ -62,6 +88,11 @@ void Reassembler::reorder_v()
 
 void Reassembler::deal_with_overlap()
 {
+  if (v.size() == 0) {
+    std::cout << "exception: v.size = 0" << "\n";
+  }
+
+  reorder_v();
   std::vector<Packet> ans{};
   ans.push_back(v.front());
 
