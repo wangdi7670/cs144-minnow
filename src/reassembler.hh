@@ -23,6 +23,12 @@ private:
   uint64_t next_index {};
   std::vector<Packet> v {};
   
+  // reorder v by the first_index of packet
+  void reorder_v();
+
+  // ensure no overlapping in v;
+  void deal_with_overlap();
+  
 
 public:
   /*
@@ -50,6 +56,6 @@ public:
   // How many bytes are stored in the Reassembler itself?
   uint64_t bytes_pending() const;
 
-  // reorder v by the first_index of Packet
-  void reorder_v();
+  // print member variables "v" 
+  void print_packets() const;
 };
