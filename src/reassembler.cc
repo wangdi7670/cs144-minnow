@@ -53,6 +53,9 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
     v.push_back( packet );
   }
   else if ( next_index > first_index ) {
+    if (first_index + data.size() <= next_index) {
+      return;
+    }
     uint64_t start = next_index - first_index;
 
     data = data.substr(start, av);
