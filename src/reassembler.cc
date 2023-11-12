@@ -27,15 +27,25 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   (void)output;
 
   uint64_t av = output.available_capacity();
+  uint64_t bound = next_index + av;
 
   // truncating data
-  if ( next_index == first_index ) {
+  if (data.size() == 0) {
+    if (!is_last_substring || first_index >= bound) {
+      return;
+    }
+    Packet packet(first_index, data, is_last_substring);
+    v.push_back(packet);
+  }
+  else if ( next_index == first_index ) {
     data = data.substr( 0, 0 + av );
     Packet packet( first_index, data, is_last_substring );
     v.push_back( packet );
   }
   else if ( next_index < first_index ) {
-    uint64_t bound = next_index + av;
+    if (first_index >= bound) {
+      return;
+    }
     uint64_t number = bound - first_index;
     data = data.substr(0, 0+number);
 
@@ -60,7 +70,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
 
   deal_with_overlap();
 
-  while (next_index == v.front().first_index_) {
+  while (v.size() > 0 && next_index == v.front().first_index_) {
     Packet& p = v.front();
     output.push(p.data_);
     if (p.is_last_str_) {
@@ -100,7 +110,7 @@ void Reassembler::deal_with_overlap()
   std::vector<Packet> ans{};
   ans.push_back(v.front());
 
-  for (int i = 1; i < v.size(); i++) {
+  for (uint64_t i = 1; i < v.size(); i++) {
     if (ans.back().get_last_index() >= v[i].first_index_) {
       if (ans.back().get_last_index() < v[i].get_last_index()) {
         uint64_t start = v[i].first_index_;
@@ -121,7 +131,7 @@ void Reassembler::deal_with_overlap()
 
 void Reassembler::print_packets() const
 {
-  for (int i = 0; i < v.size(); i++) {
+  for (uint64_t i = 0; i < v.size(); i++) {
     std::cout << "first: " << v[i].first_index_ << " data: " << v[i].data_ << "\n";
   }
 }
