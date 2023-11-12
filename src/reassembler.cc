@@ -38,7 +38,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
     v.push_back(packet);
   }
   else if ( next_index == first_index ) {
-    data = data.substr( 0, 0 + av );
+    data = data.substr( 0, av );
     Packet packet( first_index, data, is_last_substring );
     v.push_back( packet );
   }
@@ -47,7 +47,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
       return;
     }
     uint64_t number = bound - first_index;
-    data = data.substr(0, 0+number);
+    data = data.substr(0, number);
 
     Packet packet( first_index, data, is_last_substring );
     v.push_back( packet );
@@ -55,7 +55,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   else if ( next_index > first_index ) {
     uint64_t start = next_index - first_index;
 
-    data = data.substr(start, start+av);
+    data = data.substr(start, av);
 
     Packet packet( next_index, data, is_last_substring );
     v.push_back( packet );
