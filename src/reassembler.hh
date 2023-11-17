@@ -56,6 +56,9 @@ public:
   // How many bytes are stored in the Reassembler itself?
   uint64_t bytes_pending() const;
 
+  // get expected index
+  uint64_t get_expected_index() const {return next_index;}
+
   // print member variables "v" 
   void print_packets() const;
 };
