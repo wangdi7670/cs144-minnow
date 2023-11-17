@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+using namespace std;
+
 class Buffer
 {
   std::shared_ptr<std::string> buffer_;
