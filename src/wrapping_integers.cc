@@ -46,9 +46,7 @@ uint64_t Wrap32::unwrap( Wrap32 zero_point, uint64_t checkpoint ) const
     return ab;
   }
 
-  while (!(ab <= checkpoint && checkpoint < ab + size)) {
-    ab += size;
-  }
+  ab += (checkpoint - ab) / size * size;
 
   ab = checkpoint - ab <= ab + size - checkpoint ? ab : ab + size;
 
