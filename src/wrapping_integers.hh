@@ -32,8 +32,8 @@ public:
   bool operator==( const Wrap32& other ) const { return raw_value_ == other.raw_value_; }
 
   // converting stream index to absolute index
-  static uint64_t si2ab(bool SYN, uint64_t stream_index)
+  static uint64_t si2ab(uint64_t stream_index)
   {
-    return SYN ? 0 : stream_index + 1;
+    return stream_index + 1;
   }
 };
