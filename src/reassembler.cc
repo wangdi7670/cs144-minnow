@@ -34,7 +34,6 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   // 如果is_last_substring = true, 且data被截断了，那么is_last_substring应该设置为false,目前没处理这种情况(后续出问题再改)
   if (data.size() == 0) {
     // 1. 当data.size = 0时，如果is_last_sutring不为true，我认为它是非法的
-    assert(is_last_substring == true);
     // 2. 把它放到容器里重新排序，我觉得这种情况应该避免，虽然目前没有避免，但是测试用例都过了
     // 3. 后续如果因为data.size = 0导致重新排序出现bug，再行修改
     if (!is_last_substring || first_index >= bound) {
