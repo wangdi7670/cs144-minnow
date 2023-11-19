@@ -86,6 +86,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
     }
 
     next_index += p.data_.size();
+    next_index += (p.is_last_str_ ? 1 : 0);  // for ackno
     v.erase(v.begin());
   }    
 }
