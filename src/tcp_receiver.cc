@@ -23,13 +23,6 @@ void TCPReceiver::receive( TCPSenderMessage message, Reassembler& reassembler, W
   reassembler.insert(stream_index, (std::string&)message.payload, message.FIN, inbound_stream);
 
   ackno = Wrap32::wrap(Wrap32::si2ab(reassembler.get_expected_index()), zero_point);
-  if (message.FIN) {
-    ackno = ackno.value() + 1;
-  }
-
-  if (message.FIN) {
-    valid = false;
-  }
 }
 
 TCPReceiverMessage TCPReceiver::send( const Writer& inbound_stream ) const
