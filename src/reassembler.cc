@@ -18,7 +18,13 @@ uint64_t Reassembler::Packet::get_last_index()
   return first_index_ + data_.size() - 1;
 }
 
-
+/*
+* next_index += 1 if is_last_substring == true(take FIN as a chara too for TCPReceiver::ackno)
+*
+* implicit bug:
+* 1. 去重时是不是也应该考虑 is_last_substring
+* 2. 如果is_last_substring = true, 且data被截断了，那么is_last_substring应该设置为false,目前没处理这种情况(后续出问题再改)
+*/
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring, Writer& output )
 {
   // Your code here.
@@ -31,14 +37,18 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   uint64_t bound = next_index + av;
 
   // truncating data
-  // 如果is_last_substring = true, 且data被截断了，那么is_last_substring应该设置为false,目前没处理这种情况(后续出问题再改)
   if (data.size() == 0) {
-    // 1. 当data.size = 0时，如果is_last_sutring不为true，我认为它是非法的
-    // 2. 把它放到容器里重新排序，我觉得这种情况应该避免，虽然目前没有避免，但是测试用例都过了
-    // 3. 后续如果因为data.size = 0导致重新排序出现bug，再行修改
+    // 当data.size = 0时，如果is_last_sutring不为true, 直接返回，不做处理
     if (!is_last_substring || first_index >= bound) {
       return;
     }
+
+    // 此时这个packet是最后一个了，所以它的first_index应该是 v 中最大的
+    assert(is_last_substring == true);
+    if (v.size() > 0) {
+      assert(first_index > v.back().get_last_index());
+    }
+    
     Packet packet(first_index, data, is_last_substring);
     v.push_back(packet);
   }
