@@ -7,8 +7,7 @@ using namespace std;
 
 /* TCPSender constructor (uses a random ISN if none given) */
 TCPSender::TCPSender( uint64_t initial_RTO_ms, optional<Wrap32> fixed_isn )
-  : isn_( fixed_isn.value_or( Wrap32 { random_device()() } ) ), initial_RTO_ms_( initial_RTO_ms ), 
-    expected_seqno_(isn_)
+  : isn_( fixed_isn.value_or( Wrap32 { random_device()() } ) ), initial_RTO_ms_( initial_RTO_ms )
 {}
 
 uint64_t TCPSender::sequence_numbers_in_flight() const
@@ -39,7 +38,7 @@ TCPSenderMessage TCPSender::send_empty_message() const
 {
   // Your code here.
   struct TCPSenderMessage msg; 
-  msg.seqno = expected_seqno_;
+  msg.seqno = Wrap32::wrap(next_absolute_num_, isn_);
   return msg;
 }
 

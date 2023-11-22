@@ -14,7 +14,7 @@ class TCPSender
   std::optional<Wrap32> receiver_ackno_{};
 
   std::vector<TCPSenderMessage> messages_{};
-  Wrap32 expected_seqno_;
+  uint64_t next_absolute_num_{};
   std::vector<TCPSenderMessage> outstanding_segments_{};
 
 public:
