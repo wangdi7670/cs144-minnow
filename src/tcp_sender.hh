@@ -9,6 +9,14 @@ class TCPSender
   Wrap32 isn_;
   uint64_t initial_RTO_ms_;
 
+  // my code here
+  uint16_t receiver_window_{1};
+  std::optional<Wrap32> receiver_ackno_{};
+
+  std::vector<TCPSenderMessage> messages_{};
+  Wrap32 expected_seqno_;
+  std::vector<TCPSenderMessage> outstanding_segments_{};
+
 public:
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
   TCPSender( uint64_t initial_RTO_ms, std::optional<Wrap32> fixed_isn );
