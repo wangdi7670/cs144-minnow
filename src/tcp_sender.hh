@@ -17,6 +17,19 @@ class TCPSender
   uint64_t next_absolute_num_{};
   std::vector<TCPSenderMessage> outstanding_segments_{};
 
+private:
+  bool stream_has_src(Reader& stream) const
+  {
+    return stream_has_SYN() || stream.bytes_buffered() > 0 || stream.is_finished();
+  }
+
+  bool stream_has_SYN() const
+  {
+    return next_absolute_num_ == 0;
+  }
+
+  void fill_msg_payload(std::string& payload, Reader& stream, uint16_t length);
+
 public:
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
   TCPSender( uint64_t initial_RTO_ms, std::optional<Wrap32> fixed_isn );
