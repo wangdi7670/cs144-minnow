@@ -27,6 +27,11 @@ uint64_t TCPSender::consecutive_retransmissions() const
 optional<TCPSenderMessage> TCPSender::maybe_send()
 {
   // Your code here.
+  if (!messages_.empty()) {
+    std::optional<TCPSenderMessage> res = messages_.front();
+    messages_.erase(messages_.begin());
+    return res;
+  }
   return {};
 }
 
