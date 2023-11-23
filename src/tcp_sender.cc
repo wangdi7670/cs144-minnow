@@ -29,6 +29,7 @@ optional<TCPSenderMessage> TCPSender::maybe_send()
   // Your code here.
   if (!messages_.empty()) {
     std::optional<TCPSenderMessage> res = messages_.front();
+    outstanding_segments_.push_back(messages_.front());
     messages_.erase(messages_.begin());
     return res;
   }
