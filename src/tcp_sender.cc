@@ -15,7 +15,15 @@ TCPSender::TCPSender( uint64_t initial_RTO_ms, optional<Wrap32> fixed_isn )
 uint64_t TCPSender::sequence_numbers_in_flight() const
 {
   // Your code here.
-  return {};
+  uint64_t total = 0;
+  for (auto m : messages_) {
+    total += m.sequence_length();
+  }
+
+  for (auto m : outstanding_segments_) {
+    total += m.sequence_length();
+  }
+  return total;
 }
 
 uint64_t TCPSender::consecutive_retransmissions() const
