@@ -86,7 +86,7 @@ void TCPSender::push( Reader& outbound_stream )
       outbound_stream.pop(length);
       next_absolute_num_ += length;
       
-      assert(space_available() >= 0);
+      assert(next_absolute_num_ <= (receiver_ab_ackno_ + receiver_window_));
     }
 
     if (outbound_stream.is_finished() && space_available() > 0) {
