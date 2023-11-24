@@ -17,6 +17,8 @@ class TCPSender
   uint64_t next_absolute_num_{};
   std::vector<TCPSenderMessage> outstanding_segments_{};
 
+  std::optional<Reader&> stream_{};
+
 private:
   bool stream_has_src(Reader& stream) const
   {

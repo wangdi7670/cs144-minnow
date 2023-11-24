@@ -59,6 +59,10 @@ void TCPSender::push( Reader& outbound_stream )
   // Your code here.
   (void)outbound_stream;
 
+  if (!stream_.has_value()) {
+    stream_ = outbound_stream;
+  }
+
   while (receiver_window_ > 0 && stream_has_src(outbound_stream)) {
     Wrap32 seqno = Wrap32::wrap(next_absolute_num_, isn_);
     bool SYN = false;
@@ -105,7 +109,23 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
 {
   // Your code here.
   (void)msg;
+  
   receiver_window_ = (msg.window_size == 0) ? 1 : msg.window_size;
+  assert(stream_.has_value());
+  push(stream_.value());
+
+  assert(msg.ackno.has_value());
+  uint64_t ab = msg.ackno.value().unwrap(isn_, next_absolute_num_);
+
+  while (!outstanding_segments_.empty()) {
+    TCPSenderMessage& m = outstanding_segments_.front();
+    uint64_t right_edge = m.seqno.unwrap(isn_, next_absolute_num_) + m.sequence_length() - 1;
+    if (ab > right_edge) {
+      outstanding_segments_.erase(outstanding_segments_.begin());
+    } else {
+      return;
+    }
+  }
 }
 
 void TCPSender::tick( const size_t ms_since_last_tick )
