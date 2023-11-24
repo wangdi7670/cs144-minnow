@@ -53,6 +53,13 @@ void TCPSender::fill_msg_payload(std::string& payload, Reader& stream, uint64_t 
   payload = std::string{sv.substr(0, length)};
 }
 
+uint64_t TCPSender::space_available() const
+{
+  uint64_t left = receiver_ab_ackno;
+  uint64_t right = left + receiver_window_ - 1;
+  assert( next_absolute_num_ >= left );
+  return ( next_absolute_num_ > right ) ? 0 : ( right - next_absolute_num_ + 1 );
+}
 
 void TCPSender::push( Reader& outbound_stream )
 {
