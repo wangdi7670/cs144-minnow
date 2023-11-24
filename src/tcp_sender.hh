@@ -3,6 +3,7 @@
 #include "byte_stream.hh"
 #include "tcp_receiver_message.hh"
 #include "tcp_sender_message.hh"
+#include "assert.h"
 
 class TCPSender
 {
@@ -11,7 +12,7 @@ class TCPSender
 
   // my code here
   uint16_t receiver_window_{1};
-  std::optional<Wrap32> receiver_ackno_{};
+  uint64_t receiver_ab_ackno{0};  // ackno that receiver sended is sequence number, but we keep track of absolute number of ackno 
 
   std::vector<TCPSenderMessage> messages_{};
   uint64_t next_absolute_num_{};
@@ -27,6 +28,14 @@ private:
   bool stream_has_SYN() const
   {
     return next_absolute_num_ == 0;
+  }
+
+  uint64_t space_available() const
+  {
+    uint64_t left = receiver_ab_ackno;
+    uint64_t right = left + receiver_window_ - 1;
+    assert(next_absolute_num_ >= left);
+    return (next_absolute_num_ > right) ? 0 : (right - next_absolute_num_ + 1);
   }
 
   void fill_msg_payload(std::string& payload, Reader& stream, uint16_t length);
