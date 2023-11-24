@@ -38,7 +38,7 @@ private:
     return (next_absolute_num_ > right) ? 0 : (right - next_absolute_num_ + 1);
   }
 
-  void fill_msg_payload(std::string& payload, Reader& stream, uint16_t length);
+  void fill_msg_payload(std::string& payload, Reader& stream, uint64_t length);
 
 public:
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */

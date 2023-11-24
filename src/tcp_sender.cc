@@ -47,7 +47,7 @@ optional<TCPSenderMessage> TCPSender::maybe_send()
 }
 
 
-void TCPSender::fill_msg_payload(std::string& payload, Reader& stream, uint16_t length)
+void TCPSender::fill_msg_payload(std::string& payload, Reader& stream, uint64_t length)
 {
   std::string_view sv = stream.peek();
   payload = std::string{sv.substr(0, length)};
@@ -59,37 +59,36 @@ void TCPSender::push( Reader& outbound_stream )
   // Your code here.
   (void)outbound_stream;
 
-  while (receiver_window_ > 0 && stream_has_src(outbound_stream)) {
+  while (space_available() > 0 && stream_has_src(outbound_stream)) {
     Wrap32 seqno = Wrap32::wrap(next_absolute_num_, isn_);
     bool SYN = false;
     std::string payload{};
     bool FIN = false;
 
-
     if (stream_has_SYN()) {
       SYN = true;
-      receiver_window_--;
+      next_absolute_num_++;
     }
 
-    if (receiver_window_ > 0 && outbound_stream.bytes_buffered() > 0) {
+    uint64_t space = space_available();
+    if (space > 0 && outbound_stream.bytes_buffered() > 0) {
       uint64_t temp = std::min(TCPConfig::MAX_PAYLOAD_SIZE, outbound_stream.bytes_buffered());
-      uint16_t length = (temp < receiver_window_) ? temp : receiver_window_;
+      uint64_t length = (temp < space) ? temp : space;
 
       fill_msg_payload(payload, outbound_stream, length);
       outbound_stream.pop(length);
-      receiver_window_ -= length;
+      next_absolute_num_ += length;
       
-      assert(receiver_window_ >= 0);
+      assert(space_available() >= 0);
     }
 
-    if (outbound_stream.is_finished() && receiver_window_ > 0) {
+    if (outbound_stream.is_finished() && space_available() > 0) {
       FIN = true;
-      receiver_window_--;
+      next_absolute_num_++;
     }
 
     TCPSenderMessage msg{seqno, SYN, Buffer{payload}, FIN};
     messages_.push_back(msg);
-    next_absolute_num_ += msg.sequence_length();
   }
 }
 
