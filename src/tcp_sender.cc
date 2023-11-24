@@ -37,7 +37,9 @@ optional<TCPSenderMessage> TCPSender::maybe_send()
   // Your code here.
   if (!messages_.empty()) {
     std::optional<TCPSenderMessage> res = messages_.front();
-    outstanding_segments_.push_back(messages_.front());
+    if (messages_.front().sequence_length() > 0) {
+      outstanding_segments_.push_back( messages_.front() );
+    } 
     messages_.erase(messages_.begin());
     return res;
   }
@@ -103,6 +105,7 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
 {
   // Your code here.
   (void)msg;
+  receiver_window_ = (msg.window_size == 0) ? 1 : msg.window_size;
 }
 
 void TCPSender::tick( const size_t ms_since_last_tick )
