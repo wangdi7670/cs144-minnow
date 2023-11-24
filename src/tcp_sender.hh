@@ -12,10 +12,10 @@ class TCPSender
 
   // my code here
   uint16_t receiver_window_{1};
-  uint64_t receiver_ab_ackno{0};  // ackno that receiver sended is sequence number, but we keep track of absolute number of ackno 
+  uint64_t receiver_ab_ackno_{0};                               // ackno that receiver sended is sequence number, but we keep track of absolute number of ackno 
 
-  std::vector<TCPSenderMessage> messages_{};
-  uint64_t next_absolute_num_{};
+  std::vector<TCPSenderMessage> messages_{};                    // ready-segments
+  uint64_t next_absolute_num_{};                                // absolute number that tcp_sender will send next
   std::vector<TCPSenderMessage> outstanding_segments_{};
 
 

@@ -55,7 +55,7 @@ void TCPSender::fill_msg_payload(std::string& payload, Reader& stream, uint64_t 
 
 uint64_t TCPSender::space_available() const
 {
-  uint64_t left = receiver_ab_ackno;
+  uint64_t left = receiver_ab_ackno_;
   uint64_t right = left + receiver_window_ - 1;
   assert( next_absolute_num_ >= left );
   return ( next_absolute_num_ > right ) ? 0 : ( right - next_absolute_num_ + 1 );
@@ -112,15 +112,19 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
   // Your code here.
   (void)msg;
   
+  if (!msg.ackno.has_value()) {
+    return;
+  }
+  
   receiver_window_ = (msg.window_size == 0) ? 1 : msg.window_size;
 
   assert(msg.ackno.has_value());
-  uint64_t ab = msg.ackno.value().unwrap(isn_, next_absolute_num_);
+  receiver_ab_ackno_ = msg.ackno.value().unwrap(isn_, next_absolute_num_);
 
   while (!outstanding_segments_.empty()) {
     TCPSenderMessage& m = outstanding_segments_.front();
     uint64_t right_edge = m.seqno.unwrap(isn_, next_absolute_num_) + m.sequence_length() - 1;
-    if (ab > right_edge) {
+    if (receiver_ab_ackno_ > right_edge) {
       outstanding_segments_.erase(outstanding_segments_.begin());
     } else {
       return;
