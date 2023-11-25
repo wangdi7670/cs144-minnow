@@ -41,6 +41,9 @@ optional<TCPSenderMessage> TCPSender::maybe_send()
     if (messages_.front().sequence_length() > 0) {
       uint64_t ab = res.value().seqno.unwrap(isn_, next_absolute_num_);
       outstanding_segments_.insert({ab, messages_.front()});
+      if (!timer_.running_) {
+        timer_.start(time_, initial_RTO_ms_);
+      }
     } 
     messages_.erase(messages_.begin());
     return res;
@@ -139,32 +142,86 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
 
   receiver_ab_ackno_ = receiver_ab;
 
+  bool is_ack_some = false;
+
   // remove any that have now been fully acknowledged
   for (auto iter = outstanding_segments_.begin(); iter != outstanding_segments_.end(); ) {
     const auto& [absolute_num, seg] = *iter;
     uint64_t right_edge = absolute_num + seg.sequence_length() - 1;
     if (receiver_ab_ackno_ > right_edge) {
+      is_ack_some = true;
       iter = outstanding_segments_.erase(iter);
     } else {
       iter++;
     }
   }
+
+  if (is_ack_some) {
+    if (outstanding_segments_.empty()) {
+      timer_.stop();
+    } else {
+      consecutive_retransmissions_ = 0;
+      timer_.start(time_, initial_RTO_ms_);
+    }
+  }
 }
+
+
+void TCPSender::retransmit_earliest()
+{ 
+  assert(!outstanding_segments_.empty());
+
+  // find earliest
+  auto iter = outstanding_segments_.begin();
+  uint64_t min_absoulute = iter->first;
+
+  for (const auto& pair : outstanding_segments_) {
+    min_absoulute = std::min(min_absoulute, pair.first);
+  }
+
+  assert(outstanding_segments_.contains(min_absoulute));
+  messages_.insert(messages_.begin(), outstanding_segments_.at(min_absoulute));
+
+  outstanding_segments_.erase(min_absoulute);
+}
+  
 
 void TCPSender::tick( const size_t ms_since_last_tick )
 {
   // Your code here.
   (void)ms_since_last_tick;
+
+  time_ += ms_since_last_tick;
+
+  if (timer_.running_ && timer_.expire(time_)) {
+    if (outstanding_segments_.empty()) {
+      timer_.stop();
+      return;
+    }
+
+    retransmit_earliest();
+    if (receiver_window_ != 0) {
+      consecutive_retransmissions_++;
+      uint64_t rto = timer_.RTO_;
+      timer_.start(time_, 2*rto);
+    } 
+  }
 }
 
 void TCPSender::Timer::start(uint64_t start_time, uint64_t RTO)
 {
-  running = true;
+  running_ = true;
   start_time_ = start_time;
   RTO_ = RTO;
 }
 
 bool TCPSender::Timer::expire(uint64_t current_time) const
 {
+  assert(running_ == true);
   return current_time >= (start_time_ + RTO_);
 }
+
+void TCPSender::Timer::stop()
+{
+  running_ = false;
+} 

@@ -24,18 +24,22 @@ class TCPSender
   bool transmitted_FIN{false};                                   // have ever transmitted FIN?
   uint64_t consecutive_retransmissions_{0};                        
 
+  uint64_t time_{0};                                              // maintain time the sender has been alive
+
   class Timer {
   public:
     uint64_t start_time_{0};
     uint64_t RTO_{0};
-    bool running{false};
+    bool running_{false};
 
     void start(uint64_t start_time, uint64_t RTO);
 
     bool expire(uint64_t current_time) const;
+
+    void stop();
   };
 
-  Timer timer{};                                                 // retransmission timer
+  Timer timer_{};                                                 // retransmission timer
 
 private:
   bool stream_has_src(Reader& stream) const
@@ -55,6 +59,7 @@ private:
 
   void fill_msg_payload(std::string& payload, Reader& stream, uint64_t length);
 
+  void retransmit_earliest();
 public:
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
   TCPSender( uint64_t initial_RTO_ms, std::optional<Wrap32> fixed_isn );
