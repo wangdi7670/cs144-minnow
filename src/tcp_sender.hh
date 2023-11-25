@@ -18,17 +18,20 @@ class TCPSender
   uint64_t next_absolute_num_{};                                // absolute number that tcp_sender will send next
   std::vector<TCPSenderMessage> outstanding_segments_{};
 
+  bool transmitted_FIN{false};                                   // have ever transmitted FIN?
 
 private:
   bool stream_has_src(Reader& stream) const
   {
-    return stream_has_SYN() || stream.bytes_buffered() > 0 || stream.is_finished();
+    return stream_has_SYN() || stream.bytes_buffered() > 0 || stream_has_FIN(stream);
   }
 
   bool stream_has_SYN() const
   {
     return next_absolute_num_ == 0;
   }
+
+  bool stream_has_FIN(Reader& stream) const;
 
   // receiver's space-available of window
   uint64_t space_available() const;

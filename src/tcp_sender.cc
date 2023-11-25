@@ -47,6 +47,14 @@ optional<TCPSenderMessage> TCPSender::maybe_send()
   return {};
 }
 
+bool TCPSender::stream_has_FIN(Reader& stream) const
+{
+  if (transmitted_FIN) {
+    return false;
+  }
+
+  return stream.is_finished();
+}
 
 void TCPSender::fill_msg_payload(std::string& payload, Reader& stream, uint64_t length)
 {
@@ -90,8 +98,9 @@ void TCPSender::push( Reader& outbound_stream )
       assert(next_absolute_num_ <= (receiver_ab_ackno_ + receiver_window_));
     }
 
-    if (outbound_stream.is_finished() && space_available() > 0) {
+    if (stream_has_FIN(outbound_stream) && space_available() > 0) {
       FIN = true;
+      transmitted_FIN = true;
       next_absolute_num_++;
     }
 
