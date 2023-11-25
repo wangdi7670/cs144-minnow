@@ -50,6 +50,7 @@ optional<TCPSenderMessage> TCPSender::maybe_send()
 bool TCPSender::stream_has_FIN(Reader& stream) const
 {
   if (transmitted_FIN) {
+    assert(stream.bytes_buffered() == 0);
     return false;
   }
 
@@ -122,6 +123,8 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
   // Your code here.
   (void)msg;
   
+  receiver_window_ = (msg.window_size == 0) ? 1 : msg.window_size;
+  
   if (!msg.ackno.has_value()) {
     return;
   }  
@@ -134,7 +137,6 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
   }
 
   receiver_ab_ackno_ = receiver_ab;
-  receiver_window_ = (msg.window_size == 0) ? 1 : msg.window_size;
 
   while (!outstanding_segments_.empty()) {
     TCPSenderMessage& m = outstanding_segments_.front();
