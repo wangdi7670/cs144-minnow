@@ -157,10 +157,10 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
   }
 
   if (is_ack_some) {
+    consecutive_retransmissions_ = 0;
     if (outstanding_segments_.empty()) {
       timer_.stop();
     } else {
-      consecutive_retransmissions_ = 0;
       timer_.start(time_, initial_RTO_ms_);
     }
   }
