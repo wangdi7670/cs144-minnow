@@ -22,7 +22,7 @@ uint64_t TCPSender::sequence_numbers_in_flight() const
   }
 
   for (auto m : outstanding_segments_) {
-    total += m.sequence_length();
+    total += m.second.sequence_length();
   }
   return total;
 }
@@ -39,7 +39,8 @@ optional<TCPSenderMessage> TCPSender::maybe_send()
   if (!messages_.empty()) {
     std::optional<TCPSenderMessage> res = messages_.front();
     if (messages_.front().sequence_length() > 0) {
-      outstanding_segments_.push_back( messages_.front() );
+      uint64_t ab = res.value().seqno.unwrap(isn_, next_absolute_num_);
+      outstanding_segments_.insert({ab, messages_.front()});
     } 
     messages_.erase(messages_.begin());
     return res;
@@ -124,7 +125,7 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
   (void)msg;
   
   receiver_window_ = (msg.window_size == 0) ? 1 : msg.window_size;
-  
+
   if (!msg.ackno.has_value()) {
     return;
   }  
@@ -138,13 +139,14 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
 
   receiver_ab_ackno_ = receiver_ab;
 
-  while (!outstanding_segments_.empty()) {
-    TCPSenderMessage& m = outstanding_segments_.front();
-    uint64_t right_edge = m.seqno.unwrap(isn_, next_absolute_num_) + m.sequence_length() - 1;
+  // remove any that have now been fully acknowledged
+  for (auto iter = outstanding_segments_.begin(); iter != outstanding_segments_.end(); ) {
+    const auto& [absolute_num, seg] = *iter;
+    uint64_t right_edge = absolute_num + seg.sequence_length() - 1;
     if (receiver_ab_ackno_ > right_edge) {
-      outstanding_segments_.erase(outstanding_segments_.begin());
+      iter = outstanding_segments_.erase(iter);
     } else {
-      return;
+      iter++;
     }
   }
 }
