@@ -4,6 +4,7 @@
 #include <random>
 #include <algorithm>
 #include <assert.h>
+#include <iostream>
 
 using namespace std;
 
@@ -114,12 +115,17 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
   
   if (!msg.ackno.has_value()) {
     return;
-  }
-  
-  receiver_window_ = (msg.window_size == 0) ? 1 : msg.window_size;
-
+  }  
   assert(msg.ackno.has_value());
-  receiver_ab_ackno_ = msg.ackno.value().unwrap(isn_, next_absolute_num_);
+
+  // Impossible ackno (beyond next seqno) is ignored
+  uint64_t receiver_ab = msg.ackno.value().unwrap(isn_, next_absolute_num_);
+  if (receiver_ab > next_absolute_num_) {
+    return;
+  }
+
+  receiver_ab_ackno_ = receiver_ab;
+  receiver_window_ = (msg.window_size == 0) ? 1 : msg.window_size;
 
   while (!outstanding_segments_.empty()) {
     TCPSenderMessage& m = outstanding_segments_.front();
