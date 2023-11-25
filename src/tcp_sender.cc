@@ -70,7 +70,8 @@ void TCPSender::fill_msg_payload(std::string& payload, Reader& stream, uint64_t 
 uint64_t TCPSender::space_available() const
 {
   uint64_t left = receiver_ab_ackno_;
-  uint64_t right = left + receiver_window_ - 1;
+  // if window == 0,  pretend like the window size is one
+  uint64_t right = (receiver_window_ == 0) ? left : (left + receiver_window_ - 1);
   assert( next_absolute_num_ >= left );
   return ( next_absolute_num_ > right ) ? 0 : ( right - next_absolute_num_ + 1 );
 }
@@ -99,8 +100,6 @@ void TCPSender::push( Reader& outbound_stream )
       fill_msg_payload(payload, outbound_stream, length);
       outbound_stream.pop(length);
       next_absolute_num_ += length;
-      
-      assert(next_absolute_num_ <= (receiver_ab_ackno_ + receiver_window_));
     }
 
     if (stream_has_FIN(outbound_stream) && space_available() > 0) {
@@ -127,7 +126,7 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
   // Your code here.
   (void)msg;
   
-  receiver_window_ = (msg.window_size == 0) ? 1 : msg.window_size;
+  receiver_window_ = msg.window_size;
 
   if (!msg.ackno.has_value()) {
     return;
@@ -200,11 +199,14 @@ void TCPSender::tick( const size_t ms_since_last_tick )
     }
 
     retransmit_earliest();
+    uint64_t rto = timer_.RTO_;
+
     if (receiver_window_ != 0) {
       consecutive_retransmissions_++;
-      uint64_t rto = timer_.RTO_;
-      timer_.start(time_, 2*rto);
-    } 
+      rto = 2 * timer_.RTO_;
+    }
+
+    timer_.start( time_, rto );
   }
 }
 
