@@ -30,7 +30,7 @@ uint64_t TCPSender::sequence_numbers_in_flight() const
 uint64_t TCPSender::consecutive_retransmissions() const
 {
   // Your code here.
-  return {};
+  return consecutive_retransmissions_;
 }
 
 optional<TCPSenderMessage> TCPSender::maybe_send()
@@ -155,4 +155,16 @@ void TCPSender::tick( const size_t ms_since_last_tick )
 {
   // Your code here.
   (void)ms_since_last_tick;
+}
+
+void TCPSender::Timer::start(uint64_t start_time, uint64_t RTO)
+{
+  running = true;
+  start_time_ = start_time;
+  RTO_ = RTO;
+}
+
+bool TCPSender::Timer::expire(uint64_t current_time) const
+{
+  return current_time >= (start_time_ + RTO_);
 }

@@ -22,7 +22,20 @@ class TCPSender
   std::map<uint64_t, TCPSenderMessage> outstanding_segments_{};  // k is absolute-num, v is segment
 
   bool transmitted_FIN{false};                                   // have ever transmitted FIN?
-  uint64_t consecutive_retransmissions{0};                        
+  uint64_t consecutive_retransmissions_{0};                        
+
+  class Timer {
+  public:
+    uint64_t start_time_{0};
+    uint64_t RTO_{0};
+    bool running{false};
+
+    void start(uint64_t start_time, uint64_t RTO);
+
+    bool expire(uint64_t current_time) const;
+  };
+
+  Timer timer{};                                                 // retransmission timer
 
 private:
   bool stream_has_src(Reader& stream) const
