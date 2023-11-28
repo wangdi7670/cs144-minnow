@@ -41,7 +41,31 @@ private:
   // IP (known as Internet-layer or network-layer) address of the interface
   Address ip_address_;
 
+  // waiting sended
+  std::queue<EthernetFrame> ethernetFrame_queue_{};
+
+  // key is next_hop ip address, value is internet datagram
+  std::unordered_map<uint32_t, InternetDatagram> temporary_ip_packet_{};
+
+  size_t time_{0};
+
+  // key is ip address, value.first is ethernet address, value.second is expiring time
+  std::unordered_map<uint32_t, std::pair<EthernetAddress, size_t>> IP2Ethernet_{};
+
+  // already sent an ARP request about the same IP address in the last five seconds
+  // key is ip address, value is expiring time
+  std::unordered_map<uint32_t, size_t> has_requested_ip_ {};
+
+  bool has_ip2ethernet_cache(uint32_t ip) const;
+
+  bool has_already_sent_in_last5s(uint32_t ip_address) const;
+
+  void send_internet_datagram_queue();
+
 public:
+  static constexpr size_t ARP_CACHE_TIME = 30 * 1000;  // ms
+  static constexpr size_t HAS_SENT_TIME = 5 * 1000;    // ms
+
   // Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer)
   // addresses
   NetworkInterface( const EthernetAddress& ethernet_address, const Address& ip_address );
