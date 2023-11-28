@@ -82,6 +82,9 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
       ethernet_frame.payload = serialize(arp_request);
 
       ethernetFrame_queue_.push(ethernet_frame);
+
+      // record self ARP request
+      has_requested_ip_.insert({next_hop_ip, (time_+HAS_SENT_TIME)});
     }
 
     // queue the IP datagram so it can be sent after the ARP reply is received
