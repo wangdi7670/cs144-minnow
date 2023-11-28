@@ -27,3 +27,7 @@ Remaining Bugs:
 - Optional: I was surprised by: [describe]
 
 - Optional: I'm not sure about: [describe]
+
+Notes:
+
+1. if receiver_window = 4, 且sender存了"abcde"5个字节，SYN还没有发送，如果要生成TCPSenderMessage, 那么 msg 应该是{SYN=true, buffer="abc"}, 就是说window=4, 其中 SYN 也要占一个坑位，同理 FIN 也一样
