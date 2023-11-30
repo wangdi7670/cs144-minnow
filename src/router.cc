@@ -27,3 +27,19 @@ void Router::add_route( const uint32_t route_prefix,
 }
 
 void Router::route() {}
+
+Router::RouteRule::RouteRule(uint32_t route_prefix, uint8_t prefix_length, std::optional<Address>& next_hop, size_t interface_index) :
+  route_prefix_(route_prefix), 
+  prefix_length_(prefix_length), 
+  next_hop_(next_hop), 
+  interface_index_(interface_index)
+{}
+
+bool Router::RouteRule::operator<( const RouteRule& other ) const
+{
+  if (route_prefix_ == other.route_prefix_ && prefix_length_ == other.prefix_length_) {
+    return false;
+  } else {
+    return prefix_length_ < other.prefix_length_;
+  }
+}

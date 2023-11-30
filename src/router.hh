@@ -4,6 +4,7 @@
 
 #include <optional>
 #include <queue>
+#include <set>
 
 // A wrapper for NetworkInterface that makes the host-side
 // interface asynchronous: instead of returning received datagrams
@@ -52,8 +53,25 @@ public:
 // performs longest-prefix-match routing between them.
 class Router
 {
+public:
+
+  class RouteRule {
+    uint32_t route_prefix_;
+    uint8_t prefix_length_;
+    std::optional<Address> next_hop_;
+    size_t interface_index_;
+
+    RouteRule(uint32_t route_prefix, uint8_t prefix_length, std::optional<Address>& next_hop, size_t interface_index);
+
+    bool operator<(const RouteRule& other) const;
+
+  };
+
+private:
   // The router's collection of network interfaces
   std::vector<AsyncNetworkInterface> interfaces_ {};
+
+  std::set<RouteRule> route_table_{};
 
 public:
   // Add an interface to the router
