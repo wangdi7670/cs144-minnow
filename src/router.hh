@@ -56,12 +56,13 @@ class Router
 public:
 
   class RouteRule {
+  public:
     uint32_t route_prefix_;
     uint8_t prefix_length_;
     std::optional<Address> next_hop_;
     size_t interface_index_;
 
-    RouteRule(uint32_t route_prefix, uint8_t prefix_length, std::optional<Address>& next_hop, size_t interface_index);
+    RouteRule(uint32_t route_prefix, uint8_t prefix_length, const std::optional<Address>& next_hop, size_t interface_index);
 
     bool operator<(const RouteRule& other) const;
 
