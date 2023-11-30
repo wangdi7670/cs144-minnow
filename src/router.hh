@@ -66,6 +66,9 @@ public:
 
     bool operator<(const RouteRule& other) const;
 
+    // 当前的 rule 是否匹配给定的 ip
+    bool is_match_rule(uint32_t ip_address) const;
+
   };
 
 private:
@@ -73,6 +76,9 @@ private:
   std::vector<AsyncNetworkInterface> interfaces_ {};
 
   std::set<RouteRule> route_table_{};
+
+  // find longest-prefix-match route_rule
+  std::optional<RouteRule> longest_prefix_match(const InternetDatagram& internet_datagram) const;
 
 public:
   // Add an interface to the router
