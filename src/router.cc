@@ -104,6 +104,6 @@ bool Router::RouteRule::operator<( const RouteRule& other ) const
   if (route_prefix_ == other.route_prefix_ && prefix_length_ == other.prefix_length_) {
     return false;
   } else {
-    return prefix_length_ < other.prefix_length_;
+    return prefix_length_ <= other.prefix_length_;
   }
 }
