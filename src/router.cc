@@ -80,6 +80,8 @@ void Router::route()
       }
       RouteRule route_rule = rule.value();
 
+      internet_datagram.header.compute_checksum();
+
       if (route_rule.next_hop_.has_value()) {
         interfaces_[route_rule.interface_index_].send_datagram(internet_datagram, route_rule.next_hop_.value());
       } else {
